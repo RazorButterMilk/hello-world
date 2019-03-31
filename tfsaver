@@ -1,0 +1,46 @@
+import tensorflow as tf
+
+# Create some variables.
+weights = {
+    "v1": tf.get_variable("v1", shape=[3], initializer=tf.zeros_initializer),
+    "v2": tf.get_variable("v2", shape=[5], initializer=tf.zeros_initializer)
+}
+
+
+# Add an op to initialize the variables.
+init_op = tf.global_variables_initializer()
+
+# Add ops to save and restore all the variables.
+saver = tf.train.Saver({weights['v1'], weights['v2']})
+
+def some_work():
+    weights['v1'].assign(weights['v1'] + 1)
+    weights['v2'].assign(weights['v2'] - 1)
+
+# Later, launch the model, initialize the variables, do some work, and save the
+# variables to disk.
+with tf.Session() as sess:
+  sess.run(init_op)
+  # Save the variables to disk.
+  save_path = saver.save(sess, "/tmp/tfsaver/model.ckpt")
+  print("Model saved in path: %s" % save_path)
+  # Check the values of the variables
+  print("v1 : %s" % weights['v1'].eval())
+  print("v2 : %s" % weights['v2'].eval())
+  # Do some work with the model.
+  print("Some work")
+  weights['v1'].assign(weights['v1'] + 1)
+  weights['v2'].assign(weights['v2'] - 1)
+  some_work()
+  # Check the values of the variables
+  print("v1 : %s" % weights['v1'].eval())
+  print("v2 : %s" % weights['v2'].eval())
+  # Restore variables from disk.
+  saver.restore(sess, "/tmp/tfsaver/model.ckpt")
+  print("Model restored.")
+  # Check the values of the variables
+  print("v1 : %s" % weights['v1'].eval())
+  print("v2 : %s" % weights['v2'].eval())
+
+
+# tf.reset_default_graph()
